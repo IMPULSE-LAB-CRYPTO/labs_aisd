@@ -11,7 +11,7 @@ using namespace std;
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
-        std::cout << "Hellddddddddddddddddddddddddddddddddddsecond";
+        std::cout << "Hellosecond";
     }
 
     catch (const std::exception& e) {
