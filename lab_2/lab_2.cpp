@@ -66,7 +66,7 @@ public:
         } while (current != head);
     }
 
-    // Операция присваивания
+    // Оператор присваивания
     LinkedList& operator=(const LinkedList& other) {
         if (this != &other) {
             this->~LinkedList(); // уничтожаем текущий список
@@ -179,11 +179,43 @@ public:
         } while (current != head);
     }
     
-    ///...
+    // Доступ по индексу
+    T& operator[](int index) {
+        if (index < 0) throw std::out_of_range("Index out of range.");
+        Node<T>* current = head;
+        for (int i = 0; i < index && current != nullptr; ++i) {
+            current = current->next;
+        }
+        if (current == nullptr) throw std::out_of_range("Index out of range.");
+        return current->data;
+    }
 
+    const T& operator[](int index) const {
+        if (index < 0) throw std::out_of_range("Index out of range.");
+        Node<T>* current = head;
+        for (int i = 0; i < index && current != nullptr; ++i) {
+            current = current->next;
+        }
+        if (current == nullptr) throw std::out_of_range("Index out of range.");
+        return current->data;
+    }
 
+    // Вывод списка
+    void print() const {
+        if (head == nullptr) {
+            std::cout << "Список пуст." << std::endl;
+            return;
+        }
+        Node<T>* current = head;
+        do {
+            std::cout << current->data << " ";
+            current = current->next;
+        } while (current != head);
+        std::cout << std::endl;
+    }
 };
 
+    ///Задачи...
 
 int main() {
     setlocale(LC_ALL, "ru_RU");
