@@ -215,16 +215,65 @@ public:
     }
 };
 
-    ///Задачи...
+    // Задача 1: Найти простые числа в диапазоне [1; N]
+void findPrimes(int N) {
+    LinkedList<int> primesList;
+
+    for (int num = 2; num <= N; ++num) {
+        bool isPrime = true;
+        for (int i = 2; i * i <= num; ++i) {
+            if (num % i == 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        if (isPrime) {
+            primesList.push_tail(num);
+        }
+    }
+
+    std::cout << "Простые числа от 1 до " << N << ": ";
+    primesList.print();
+}
+
+// Задача 2: Представление многочлена в виде списка
+/*
+void evaluatePolynomial(const LinkedList<std::pair<int, int>>& polynomial, int x) {
+    int result = 0;
+    Node<std::pair<int, int>>* current = polynomial.head;
+
+    if (current != nullptr) {
+        do {
+            result += current->data.first * std::pow(x, current->data.second);
+            current = current->next;
+        } while (current != polynomial.head);
+    }
+
+    std::cout << "Значение многочлена при x = " << x << ": " << result << std::endl;
+}*/
 
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
         std::cout << "Hellosecond";
-        LinkedList list_1 = LinkedList<int>();
-        LinkedList list_2 = LinkedList<int>(10);
+        // Задача 1
+        int N;
+        std::cout << "Введите N для поиска простых чисел: ";
+        std::cin >> N;
+        findPrimes(N);
 
-        
+
+         // Задача 2
+         /*
+        LinkedList<std::pair<int, int>> polynomial; // Хранит пары: {коэффициент, степень}
+        polynomial.push_tail({3, 2}); // 3x^2
+        polynomial.push_tail({2, 1}); // 2x^1
+        polynomial.push_tail({1, 0}); // 1x^0
+         int x;
+        std::cout << "Введите значение x для оценки многочлена: ";
+        std::cin >> x;
+        evaluatePolynomial(polynomial, x)
+        */
     }
 
     catch (const std::exception& e) {
