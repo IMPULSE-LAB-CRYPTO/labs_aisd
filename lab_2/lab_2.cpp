@@ -5,6 +5,8 @@
 #include <random>
 #include <cstdlib>
 #include <ctime>
+#include <locale>
+#include <windows.h>
 
 using namespace std;
 
@@ -203,7 +205,7 @@ public:
     // Вывод списка
     void print() const {
         if (head == nullptr) {
-            std::cout << "Список пуст." << std::endl;
+            std::cout << "List is empty." << std::endl;
             return;
         }
         Node<T>* current = head;
@@ -232,7 +234,7 @@ void findPrimes(int N) {
         }
     }
 
-    std::cout << "Простые числа от 1 до " << N << ": ";
+    std::cout << "Simple numbers from 1 to " << N << ": ";
     primesList.print();
 }
 
@@ -253,12 +255,13 @@ void evaluatePolynomial(const LinkedList<std::pair<int, int>>& polynomial, int x
 }*/
 
 int main() {
-    setlocale(LC_ALL, "ru_RU");
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    //setlocale(LC_ALL, "ru_RU");
     try {
-        std::cout << "Hellosecond";
         // Задача 1
         int N;
-        std::cout << "Введите N для поиска простых чисел: ";
+        std::cout << "Put N to find simple numbers: ";
         std::cin >> N;
         findPrimes(N);
 
