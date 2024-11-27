@@ -54,6 +54,26 @@ public:
         }
     }
 
+    // Деструктор
+    ~LinkedList() {
+        if (head == nullptr) return;
+        Node<T>* current = head;
+        Node<T>* nextNode;
+        do {
+            nextNode = current->next;
+            delete current;
+            current = nextNode;
+        } while (current != head);
+    }
+
+    // Операция присваивания
+    LinkedList& operator=(const LinkedList& other) {
+        if (this != &other) {
+            this->~LinkedList(); // уничтожаем текущий список
+            new (this) LinkedList(other); // инициализируем новым копированием
+        }
+        return *this;
+    }
 
     // Добавление элемента в конец списка
     void push_tail(const T& value) {
@@ -69,6 +89,94 @@ public:
             current->next = newNode;
             newNode->next = head;
         }
+    }
+
+    // Добавление другого списка (перегрузка)
+    void push_tail(const LinkedList& other) {
+        if (other.head == nullptr) return;
+        Node<T>* otherCurrent = other.head;
+        do {
+            push_tail(otherCurrent->data);
+            otherCurrent = otherCurrent->next;
+        } while (otherCurrent != other.head);
+    }
+
+    // Добавление элемента в начало списка
+    void push_head(const T& value) {
+        Node<T>* newNode = new Node<T>(value);
+        if (head == nullptr) {
+            head = newNode;
+            newNode->next = head;
+        } else {
+            Node<T>* current = head;
+            while (current->next != head) {
+                current = current->next;
+            }
+            newNode->next = head;
+            head = newNode;
+            current->next = head;
+        }
+    }
+
+    // Удаление элемента из начала списка
+    void pop_head() {
+        if (head == nullptr) throw std::runtime_error("List is empty.");
+        Node<T>* current = head;
+        if (current->next == head) { // Если один элемент
+            delete current;
+            head = nullptr;
+        } else {
+            Node<T>* tail = head;
+            while (tail->next != head) {
+                tail = tail->next;
+            }
+            head = head->next;
+            tail->next = head;
+            delete current;
+        }
+    }
+
+    // Удаление элемента из конца списка
+    void pop_tail() {
+        if (head == nullptr) throw std::runtime_error("List is empty.");
+        Node<T>* current = head;
+        if (current->next == head) { // Если один элемент
+            delete current;
+            head = nullptr;
+        } else {
+            Node<T>* prev = nullptr;
+            while (current->next != head) {
+                prev = current;
+                current = current->next;
+            }
+            prev->next = head;
+            delete current;
+        }
+    }
+
+    // Удаление всех элементов с определённым значением
+    void delete_node(const T& value) {
+        while (head != nullptr && head->data == value) {
+            pop_head();
+        }
+        if (head == nullptr) return;
+        Node<T>* current = head;
+        Node<T>* prev = nullptr;
+        do {
+            if (current->data == value) {
+                if (prev) {
+                    prev->next = current->next;
+                    delete current;
+                    current = prev->next;
+                } else {
+                    pop_head();
+                    current = head; // Если голова была удалена, возвращаемся к ней
+                }
+            } else {
+                prev = current;
+                current = current->next;
+            }
+        } while (current != head);
     }
     
     ///...
