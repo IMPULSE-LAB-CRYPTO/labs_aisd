@@ -37,6 +37,7 @@ public:
             head = nullptr;
             return;
         }
+        delete[] head;
         head = new Node<T>(other.head->data);
         Node<T>* current = head;
         Node<T>* otherCurrent = other.head->next;
@@ -120,6 +121,26 @@ public:
         }
     }
 
+    // Перегрузка push_head (Добавление списка в начало списка)
+    void push_head(const LinkedList& other) {
+        if (head==nullptr){
+            head = other.head;
+            return;
+        }
+        Node<T>* otherCurrent = other.head;
+        Node<T>* current = head;
+        while (current->next != head) {
+                current = current->next;
+            }
+        while (otherCurrent->next != other.head) {
+                otherCurrent = otherCurrent->next;
+            }
+        otherCurrent->next = head;
+        current->next = other.head;
+        head = other.head;
+
+    }
+
     // Удаление элемента из начала списка
     void pop_head() {
         if (head == nullptr) throw std::runtime_error("List is empty.");
@@ -127,7 +148,8 @@ public:
         if (current->next == head) { // Если один элемент
             delete current;
             head = nullptr;
-        } else {
+        } 
+        else {
             Node<T>* tail = head;
             while (tail->next != head) {
                 tail = tail->next;
@@ -145,7 +167,8 @@ public:
         if (current->next == head) { // Если один элемент
             delete current;
             head = nullptr;
-        } else {
+        } 
+        else {
             Node<T>* prev = nullptr;
             while (current->next != head) {
                 prev = current;
@@ -170,11 +193,13 @@ public:
                     prev->next = current->next;
                     delete current;
                     current = prev->next;
-                } else {
+                } 
+                else {
                     pop_head();
                     current = head; // Если голова была удалена, возвращаемся к ней
                 }
-            } else {
+            } 
+            else {
                 prev = current;
                 current = current->next;
             }
@@ -215,9 +240,20 @@ public:
         } while (current != head);
         std::cout << std::endl;
     }
+
+    size_t GetSize() const {
+        if (head == nullptr) return 0;
+        size_t count = 0;
+        Node<T>* current = head;
+        do{ 
+            current = current->next; 
+            count++; 
+        } while(current != head);
+        return count;
+    }
 };
 
-    // Задача 1: Найти простые числа в диапазоне [1; N]
+// Задача 1: Найти простые числа в диапазоне [1; N]
 void findPrimes(int N) {
     LinkedList<int> primesList;
 
@@ -239,44 +275,92 @@ void findPrimes(int N) {
 }
 
 // Задача 2: Представление многочлена в виде списка
-/*
-void evaluatePolynomial(const LinkedList<std::pair<int, int>>& polynomial, int x) {
-    int result = 0;
-    Node<std::pair<int, int>>* current = polynomial.head;
-
-    if (current != nullptr) {
-        do {
-            result += current->data.first * std::pow(x, current->data.second);
-            current = current->next;
-        } while (current != polynomial.head);
+double calculatePolynomial(const LinkedList<std::pair<int, int>>& polynomial, double x) {
+    double result = 0.0;
+    for (int i = 0; i < polynomial.GetSize(); i++) {
+        result += polynomial[i].first * pow(x, polynomial[i].second);
     }
-
-    std::cout << "Значение многочлена при x = " << x << ": " << result << std::endl;
-}*/
+    return result;
+}
 
 int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
     //setlocale(LC_ALL, "ru_RU");
     try {
+        LinkedList<int> list_1 = LinkedList<int>();
+        LinkedList<char> list_2 = LinkedList<char>();
+        LinkedList<double> list_3 = LinkedList<double>();
+
+        LinkedList<int> list_4 = list_1;
+        LinkedList<char> list_5 = list_2;
+        LinkedList<double> list_6 = list_3;
+
+        //Демонстрация работы функций класса
+        cout << "\nOur first list with random values:\n";
+        LinkedList<int> random_list_1 = LinkedList<int>(10);
+        random_list_1.print();
+
+        cout<<"\nPush element to the end of list:\n";
+        random_list_1.push_tail(10);
+        random_list_1.print();
+
+        LinkedList<int> random_list_2 = LinkedList<int>(2);
+        cout << "\nSecond random list:\n";
+        random_list_2.print();
+        cout << "\nAdd second random list to the end of first random list:\n";
+        random_list_1.push_tail(random_list_2);
+        random_list_1.print();
+
+        cout << "\nAdd second random list to the start of first random list:\n";
+        random_list_1.push_head(random_list_2);
+        random_list_1.print();
+        
+        cout << "\nDelete first element:\n";
+        random_list_1.pop_head();
+        random_list_1.print();
+
+        cout << "\nDelete last element:\n";
+        random_list_1.pop_tail();
+        random_list_1.print();
+
+        cout << "\nDelete chosen elements:\n";
+        int number = 10;
+        cout << "What number we should delete: ";
+        cin >> number;
+        random_list_1.delete_node(number);
+        random_list_1.print();
+
+        cout << "\nCheck index 1:\n";
+        int index = random_list_1[1];
+        cout << index << "\n";
+
+        cout << "\nWrite into index 1:\n";
+        random_list_1[1] = 1000;
+        random_list_1.print();
+
         // Задача 1
         int N;
-        std::cout << "Put N to find simple numbers: ";
+        std::cout << "\nPut N to find simple numbers: ";
         std::cin >> N;
         findPrimes(N);
 
 
          // Задача 2
-         /*
-        LinkedList<std::pair<int, int>> polynomial; // Хранит пары: {коэффициент, степень}
+        LinkedList<std::pair<int, int>> polynomial; // Хранит пары:{коэффициент, степень}
         polynomial.push_tail({3, 2}); // 3x^2
         polynomial.push_tail({2, 1}); // 2x^1
         polynomial.push_tail({1, 0}); // 1x^0
-         int x;
-        std::cout << "Введите значение x для оценки многочлена: ";
+        int x;
+        std::cout << "Put X to calculate polynome: ";
         std::cin >> x;
-        evaluatePolynomial(polynomial, x)
-        */
+        double result = calculatePolynomial(polynomial, x);
+        cout << "Result(X="<< x <<"): " << result << "\n";
+        cout << "Polynome: ";
+        for (int i = 0; i < polynomial.GetSize(); i++){
+            std::cout << polynomial[i].first << "x^" << polynomial[i].second << (i==polynomial.GetSize()-1 ? "" : " + ");
+        }
+        std::cout << std::endl; 
     }
 
     catch (const std::exception& e) {
