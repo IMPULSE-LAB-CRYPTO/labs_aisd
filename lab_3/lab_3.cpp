@@ -2,6 +2,9 @@
 #include <vector>
 #include <random>
 
+using namespace std;
+
+
 struct stats {
     size_t comparison_count = 0;
     size_t copy_count = 0;
@@ -10,7 +13,7 @@ struct stats {
 
 // Сортировка выбором
 template <typename T>
-stats selection_sort(std::vector<T>& arr) {
+stats selection_sort(vector<T>& arr) {
     stats s;
     size_t n = arr.size();
     for (size_t i = 0; i < n - 1; ++i) {
@@ -31,7 +34,7 @@ stats selection_sort(std::vector<T>& arr) {
 
 // Сортировка Шелла
 template <typename T>
-stats shell_sort(std::vector<T>& arr) {
+stats shell_sort(vector<T>& arr) {
     stats s;
     size_t n = arr.size();
     for (size_t gap = n / 2; gap > 0; gap /= 2) {
@@ -52,3 +55,44 @@ stats shell_sort(std::vector<T>& arr) {
 }
 
 // Пирамидальная сортировка
+template<typename T>
+void heapify(vector<T>& arr, size_t n, size_t i, stats& s) {
+    size_t largest = i;
+    size_t left = 2 * i + 1;
+    size_t right = 2 * i + 2;
+
+    if (left < n) {
+        s.comparison_count++;
+        if (arr[left] > arr[largest]) {
+            largest = left;
+        }
+    }
+    if (right < n) {
+        s.comparison_count++;
+        if (arr[right] > arr[largest]) {
+            largest = right;
+        }
+    }
+
+    if (largest != i) {
+        std::swap(arr[i], arr[largest]);
+        s.copy_count += 3;
+        heapify(arr, n, largest, s);
+    }
+}
+
+template<typename T>
+stats heap_sort(vector<T>& arr) {
+    stats s;
+    size_t n = arr.size();
+
+    for (size_t i = n / 2 - 1; i != SIZE_MAX; --i) {
+        heapify(arr, n, i, s);
+    }
+    for (size_t i = n - 1; i != SIZE_MAX; --i) {
+        std::swap(arr[0], arr[i]);
+        s.copy_count += 3;
+        heapify(arr, i, 0, s);
+    }
+    return s;
+}
