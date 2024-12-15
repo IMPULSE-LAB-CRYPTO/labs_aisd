@@ -283,6 +283,42 @@ double calculatePolynomial(const LinkedList<std::pair<int, int>>& polynomial, do
     return result;
 }
 
+//Метод нормализации списка
+LinkedList<std::pair<int, int>> Normalize_list(const LinkedList<std::pair<int, int>>& polynomial) {
+    LinkedList<std::pair<int, int>> list;
+    list.push_tail({0, 0});
+    for (int i = 0; i < polynomial.GetSize(); i++) {
+        int degree = polynomial[i].second;
+        int value = polynomial[i].first;
+        bool Flag = false;
+        for (int i = 0; i < list.GetSize(); i++) {
+            if (list[i].second == degree) {
+                list[i].first += value;
+                Flag = true;
+            }
+        }
+        if (Flag == false) {
+          list.push_tail({value, degree});  
+        }
+            
+    }
+
+    for (int i = 0; i < polynomial.GetSize(); i++) {
+        if (list[i].first == 0){
+            list.delete_node(list[i]);
+        }
+    }
+    
+    /*
+    for (int i = 0; i < polynomial.GetSize(); i++) {
+        if 
+    }
+    */
+
+    return list;
+}
+
+
 int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
@@ -351,14 +387,23 @@ int main() {
         polynomial.push_tail({3, 2}); // 3x^2
         polynomial.push_tail({2, 1}); // 2x^1
         polynomial.push_tail({1, 0}); // 1x^0
+        polynomial.push_tail({-3, 1}); // 2x^1
+        LinkedList<std::pair<int, int>> norm_list = Normalize_list(polynomial);
         int x;
         std::cout << "Put X to calculate polynome: ";
         std::cin >> x;
-        double result = calculatePolynomial(polynomial, x);
+        double result = calculatePolynomial(norm_list, x);
         cout << "Result(X="<< x <<"): " << result << "\n";
         cout << "Polynome: ";
-        for (int i = 0; i < polynomial.GetSize(); i++){
-            std::cout << polynomial[i].first << "x^" << polynomial[i].second << (i==polynomial.GetSize()-1 ? "" : " + ");
+        std::cout << norm_list[0].first << "x^" << norm_list[0].second;
+        for (int i = 0; i < norm_list.GetSize()-1; i++){
+            if (norm_list[i+1].first < 0) {
+                std::cout<< " - " << abs(norm_list[i+1].first) << "x^" << norm_list[i+1].second;
+            }
+            else {
+                std::cout<< " + " << abs(norm_list[i+1].first) << "x^" << norm_list[i+1].second;
+            }
+            
         }
         std::cout << std::endl; 
     }
