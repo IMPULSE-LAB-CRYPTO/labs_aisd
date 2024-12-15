@@ -9,7 +9,8 @@ struct stats {
 
 
 // Сортировка выбором
-stats selection_sort(std::vector<int>& arr) {
+template <typename T>
+stats selection_sort(std::vector<T>& arr) {
     stats s;
     size_t n = arr.size();
     for (size_t i = 0; i < n - 1; ++i) {
@@ -29,12 +30,13 @@ stats selection_sort(std::vector<int>& arr) {
 }
 
 // Сортировка Шелла
-stats shell_sort(std::vector<int>& arr) {
+template <typename T>
+stats shell_sort(std::vector<T>& arr) {
     stats s;
     size_t n = arr.size();
     for (size_t gap = n / 2; gap > 0; gap /= 2) {
         for (size_t i = gap; i < n; ++i) {
-            int temp = arr[i];
+            T temp = arr[i];
             s.copy_count++; // Копирование во временную переменную
             size_t j;
             for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
