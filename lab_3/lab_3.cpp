@@ -96,3 +96,42 @@ stats heap_sort(vector<T>& arr) {
     }
     return s;
 }
+
+
+
+// Функция генерации случайных массивов
+std::vector<int> generate_random_vector(size_t size, unsigned seed) {
+    std::vector<int> vec(size);
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<> dist(0, 10000);
+    for (size_t i = 0; i < size; ++i) {
+        vec[i] = dist(gen);
+    }
+    return vec;
+}
+
+
+
+int main() {
+    const size_t sizes[] = {1000, 2000, 3000, 4000, 5000, 25000, 50000, 100000};
+    const int num_samples = 100;
+    unsigned seed = 42;
+
+    for (size_t size : sizes) {
+        size_t total_comparisons = 0;
+        size_t total_copies = 0;
+
+        for (int sample = 0; sample < num_samples; ++sample) {
+            std::vector<int> arr = generate_random_vector(size, seed++);
+            stats s = selection_sort(arr);
+            total_comparisons += s.comparison_count;
+            total_copies += s.copy_count;
+        }
+
+        std::cout << "Average for size " << size << ": "
+                  << "Comparisons = " << total_comparisons / num_samples
+                  << ", Copies = " << total_copies / num_samples << std::endl;
+    }
+
+    return 0;
+}
