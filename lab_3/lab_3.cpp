@@ -11,21 +11,24 @@ struct stats {
 };
 
 
-// Сортировка выбором
+// Сортировка выбором ( Сложность: O(n^2) )
 template <typename T>
 stats selection_sort(vector<T>& arr) {
     stats s;
     size_t n = arr.size();
-    for (size_t i = 0; i < n - 1; ++i) {
+    for (size_t i = 0; i < n - 1; i++) {
         size_t min_index = i;
-        for (size_t j = i + 1; j < n; ++j) {
+        for (size_t j = i + 1; j < n; j++) {
             s.comparison_count++;
             if (arr[j] < arr[min_index]) {
                 min_index = j;
             }
         }
         if (min_index != i) {
-            std::swap(arr[i], arr[min_index]);
+            T temp = arr[j];
+            arr[j] = arr[i];
+            arr[i] = temp;
+            //std::swap(arr[i], arr[min_index]);
             s.copy_count += 3; // Замена подразумевает 3 копирования
         }
     }
@@ -34,22 +37,24 @@ stats selection_sort(vector<T>& arr) {
 
 // Сортировка Шелла
 template <typename T>
-stats shell_sort(vector<T>& arr) {
+stats shellSort(vector<T>& arr) {
     stats s;
     size_t n = arr.size();
-    for (size_t gap = n / 2; gap > 0; gap /= 2) {
-        for (size_t i = gap; i < n; ++i) {
+    size_t gap = n / 2;
+    while (gap > 0) {
+        for (size_t i = gap; i < n; i++) {
             T temp = arr[i];
-            s.copy_count++; // Копирование во временную переменную
-            size_t j;
-            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+            size_t j = i;
+            while (j >= gap && arr[j - gap] > temp) {
                 s.comparison_count++;
                 arr[j] = arr[j - gap];
-                s.copy_count++;
-            }
+                s.copy_count++;     
+                j -= gap;
+            }  
             arr[j] = temp;
-            s.copy_count++; // Копирование обратно в массив
+            s.copy_count++;
         }
+        gap /= 2;
     }
     return s;
 }
@@ -100,8 +105,8 @@ stats heap_sort(vector<T>& arr) {
 
 
 // Функция генерации случайных массивов
-std::vector<int> generate_random_vector(size_t size, unsigned seed) {
-    std::vector<int> vec(size);
+vector<int> generate_random_vector(size_t size, unsigned seed) {
+    vector<int> vec(size);
     std::mt19937 gen(seed);
     std::uniform_int_distribution<> dist(0, 10000);
     for (size_t i = 0; i < size; ++i) {
@@ -122,15 +127,15 @@ int main() {
         size_t total_copies = 0;
 
         for (int sample = 0; sample < num_samples; ++sample) {
-            std::vector<int> arr = generate_random_vector(size, seed++);
+            vector<int> arr = generate_random_vector(size, seed++);
             stats s = selection_sort(arr);
             total_comparisons += s.comparison_count;
             total_copies += s.copy_count;
         }
 
-        std::cout << "Average for size " << size << ": "
+        cout << "Average for size " << size << ": "
                   << "Comparisons = " << total_comparisons / num_samples
-                  << ", Copies = " << total_copies / num_samples << std::endl;
+                  << ", Copies = " << total_copies / num_samples << endl;
     }
 
     return 0;
