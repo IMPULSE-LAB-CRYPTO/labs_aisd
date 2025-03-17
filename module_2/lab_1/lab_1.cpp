@@ -36,6 +36,32 @@ class BinarySearchTree {
         }
     }
 
+    void printTree(Node* node) const {
+        if (node) {
+            printTree(node->left);
+            std::cout << node->key << " ";
+            printTree(node->right);
+        }
+    }
+
+    void print() const {
+        printTree(root);
+        std::cout << std::endl;
+    }
+
+    bool insertNode(Node*& node, int key) {
+        if (node == nullptr) {
+            node = new Node(key);
+            return true;
+        }
+        if (key < node->key) {
+            return insertNode(node->left, key);
+        } else if (key > node->key) {
+            return insertNode(node->right, key);
+        }
+        return false; // Элемент уже существует
+    }
+
 
     public:
     BinarySearchTree() : root(nullptr) {}
@@ -56,7 +82,14 @@ class BinarySearchTree {
         return *this;
     }
 
+    void print() const {
+        printTree(root);
+        std::cout << std::endl;
+    }
 
+    bool insert(int key) {
+        return insertNode(root, key);
+    }
 
 
 
