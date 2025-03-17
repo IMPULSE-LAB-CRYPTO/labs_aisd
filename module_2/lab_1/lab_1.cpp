@@ -48,6 +48,14 @@ class BinarySearchTree {
         destroyTree(root);
     }
 
+    BinarySearchTree& operator=(const BinarySearchTree& other) {
+        if (this != &other) {
+            destroyTree(root);
+            root = copyTree(other.root);
+        }
+        return *this;
+    }
+
 
 
 
