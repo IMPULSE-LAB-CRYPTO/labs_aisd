@@ -38,25 +38,28 @@ stats selection_sort(vector<T>& arr) {
 
 // Сортировка Шелла (от O(nlogn) до O(n^2) в худшем случае)
 template <typename T>
-stats shell_sort(vector<T>& arr) {
+stats shellSort(vector<T>& arr)
+{
     stats s;
     size_t n = arr.size();
-    size_t gap = n / 2;
-    while (gap > 0) {
-        for (size_t i = gap; i < n; i++) {
-            T temp = arr[i];
-            size_t j = i;
-            while (j >= gap && arr[j - gap] > temp) {
+	for(size_t step = n/2; step > 0; step /= 2)
+	{
+		for (size_t i = step; i < n; i += 1)
+        {       
+			size_t j = i;
+            s.comparison_count++;
+			while(j >= step && arr[j - step] > arr[i])
+			{   
                 s.comparison_count++;
-                arr[j] = arr[j - gap];
-                s.copy_count++;     
-                j -= gap;
-            }  
-            arr[j] = temp;
-            s.copy_count++;
+                //swap(list[j], list[j - step]);
+                T temp = arr[i];
+                arr[j] = arr[j - step];
+                arr[j-step] = temp;
+				j-=step;
+                s.copy_count+=3;
+			}
         }
-        gap /= 2;
-    }
+	}
     return s;
 }
 
@@ -95,14 +98,18 @@ void heapify(vector<T>& arr, size_t n, size_t i, stats& s) {
 
 template<typename T>
 stats heap_sort(vector<T>& arr) {
+    
     stats s;
     size_t n = arr.size();
-
-    for (size_t i = n / 2 - 1; i != SIZE_MAX; --i) {
+    T temp;
+    for (size_t i = n / 2 - 1; i != SIZE_MAX; i--) {
         heapify(arr, n, i, s);
     }
-    for (size_t i = n - 1; i != SIZE_MAX; --i) {
-        std::swap(arr[0], arr[i]);
+    for (size_t i = n - 1; i != SIZE_MAX; i--) {
+        //std::swap(arr[0], arr[i]);
+        temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
         s.copy_count += 3;
         heapify(arr, i, 0, s);
     }
@@ -201,6 +208,7 @@ int main() {
         cout << "Average for size " << size << ": "
                   << "Comparisons = " << total_comparisons / num_samples
                   << ", Copies = " << total_copies / num_samples << endl;
+        
     };
 
 
@@ -243,7 +251,7 @@ int main() {
 
         for (int sample = 0; sample < num_samples; ++sample) {
             vector<int> arr = generate_random_vector(size, seed++);
-            stats s = shell_sort(arr);
+            stats s = shellSort(arr);
             total_comparisons += s.comparison_count;
             total_copies += s.copy_count;
         }
@@ -255,12 +263,12 @@ int main() {
 
 
     cout << "\nFor Shell_sort (sorted_vector):\n";
-    for (size_t size : sizes_selectionsort) {
+    for (size_t size : sizes) {
         size_t total_comparisons = 0;
         size_t total_copies = 0;
 
         vector<int> arr = generate_sorted_vector(size);
-        stats s = shell_sort(arr);
+        stats s = shellSort(arr);
         total_comparisons += s.comparison_count;
         total_copies += s.copy_count;
 
@@ -271,12 +279,12 @@ int main() {
 
 
     cout << "\nFor Shell_sort (reverse_sorted_vector):\n";
-    for (size_t size : sizes_selectionsort) {
+    for (size_t size : sizes) {
         size_t total_comparisons = 0;
         size_t total_copies = 0;
 
         vector<int> arr = generate_reverse_sorted_vector(size);
-        stats s = shell_sort(arr);
+        stats s = shellSort(arr);
         total_comparisons += s.comparison_count;
         total_copies += s.copy_count;
 
@@ -305,7 +313,7 @@ int main() {
     }   
 
     cout << "\nFor heap_sort (sorted_vector):\n";
-    for (size_t size : sizes_selectionsort) {
+    for (size_t size : sizes) {
         size_t total_comparisons = 0;
         size_t total_copies = 0;
 
@@ -321,7 +329,7 @@ int main() {
 
 
     cout << "\nFor heap_sort (reverse_sorted_vector):\n";
-    for (size_t size : sizes_selectionsort) {
+    for (size_t size : sizes) {
         size_t total_comparisons = 0;
         size_t total_copies = 0;
 
@@ -332,8 +340,8 @@ int main() {
 
         cout << "Average for size " << size << ": "
                   << "Comparisons = " << total_comparisons
-                  << ", Copies = " << total_copies<< endl;
+                  << ", Copies = " << total_copies<< endl;       
     };
-
+     
     return 0;
 }
