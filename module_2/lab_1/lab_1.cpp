@@ -54,11 +54,6 @@ class BinarySearchTree {
         }
     }
 
-    void print() const {
-        printTree(root);
-        std::cout << std::endl;
-    }
-
     bool insertNode(Node*& node, int key) {
         if (node == nullptr) {
             node = new Node(key);
@@ -174,6 +169,61 @@ std::vector<int> getUniqueElements(const std::vector<int>& container) {
 }
 
 
+// Функция для измерения производительности
+void measurePerformance() {
+    std::vector<int> sizes = {1000, 10000, 100000};
+    int attempts = 100; // Количество попыток для усреднения
+
+    for (int size : sizes) {
+        std::vector<double> insertTimes;
+        std::vector<double> searchTimes;
+        std::vector<double> eraseTimes;
+
+        for (int i = 0; i < attempts; ++i) {
+            BinarySearchTree bst;
+
+            // Замер времени вставки
+            auto start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < size; ++j) {
+                bst.insert(lcg());
+            }
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            insertTimes.push_back(elapsed.count());
+
+            // Замер времени поиска (выполняем поиск 1000 раз для точности)
+            int searchKey = lcg();
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; ++j) {
+                bst.contains(searchKey);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            searchTimes.push_back(elapsed.count() / 1000); // Усредняем время
+
+            // Замер времени удаления (выполняем удаление 1000 раз для точности)
+            int eraseKey = lcg();
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; ++j) {
+                bst.erase(eraseKey);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            eraseTimes.push_back(elapsed.count() / 1000); // Усредняем время
+        }
+
+        // Вычисление среднего времени
+        double avgInsertTime = std::accumulate(insertTimes.begin(), insertTimes.end(), 0.0) / attempts;
+        double avgSearchTime = std::accumulate(searchTimes.begin(), searchTimes.end(), 0.0) / attempts;
+        double avgEraseTime = std::accumulate(eraseTimes.begin(), eraseTimes.end(), 0.0) / attempts;
+
+        std::cout << "Size: " << size << std::endl;
+        std::cout << "Average insert time: " << avgInsertTime << " seconds" << std::endl;
+        std::cout << "Average search time: " << avgSearchTime << " seconds" << std::endl;
+        std::cout << "Average erase time: " << avgEraseTime << " seconds" << std::endl;
+        std::cout << std::endl;
+    }
+}
 
 
 int main() {
@@ -197,7 +247,7 @@ int main() {
         bst.print();
 
         // Проверяем наличие элементов
-        std::cout << "Checking if elements exists" << std::endl;
+        std::cout << "\nChecking if elements exists" << std::endl;
         if (bst.contains(4)) {
             std::cout << "Contains 4: true" << std::endl;
         } else {
@@ -210,7 +260,7 @@ int main() {
         }
 
         // Удаляем элементы
-        std::cout << "Erasing elements" << std::endl;
+        std::cout << "\nErasing elements" << std::endl;
         if (bst.erase(3)) {
             std::cout << "Erase 3: true" << std::endl;
         } else {
@@ -227,7 +277,7 @@ int main() {
         bst.print();
 
         // Проверяем наличие элементов после удаления
-        std::cout << "Checking if elements exist after erasing" << std::endl;
+        std::cout << "\nChecking if elements exist after erasing" << std::endl;
         if (bst.contains(3)) {
             std::cout << "Contains 3: true" << std::endl;
         } else {
@@ -240,13 +290,13 @@ int main() {
         }
 
         // Тестируем конструктор копирования
-        std::cout << "Testing copy constructor" << std::endl;
+        std::cout << "\nTesting copy constructor" << std::endl;
         BinarySearchTree bstCopy(bst);
         std::cout << "Copied tree: ";
         bstCopy.print();
 
         // Тестируем оператор присваивания
-        std::cout << "Testing assignment operator" << std::endl;
+        std::cout << "\nTesting assignment operator" << std::endl;
         BinarySearchTree bstAssigned;
         bstAssigned = bst;
         std::cout << "Contents of assigned tree: ";
@@ -254,15 +304,23 @@ int main() {
 
         // Проверка задачи с уникальными элементами
         std::vector<int> input = {3, 2, 2, 4, 2};
-        std::cout << "Input vector: ";
+        std::cout << "\nInput vector: ";
         for (int x : input) std::cout << x << " ";
         std::cout << std::endl;
 
+        auto start = std::chrono::high_resolution_clock::now();
         std::vector<int> uniqueElements = getUniqueElements(input);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start; //Замерка времени выполнения
+
         std::cout << "Unique elements: ";
         for (int x : uniqueElements) std::cout << x << " ";
         std::cout << std::endl;
+        std::cout << "Time taken to get unique elements: " << elapsed.count() << " seconds" << std::endl;
 
+        // Измерение производительности
+        std::cout << "\nMeasuring performance..." << std::endl;
+        measurePerformance();
     }
 
     catch (const std::exception& e) {
