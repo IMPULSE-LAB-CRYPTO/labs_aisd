@@ -2,6 +2,9 @@
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
+#include <chrono>
+#include <numeric>
+
 
 using namespace std;
 
@@ -150,6 +153,29 @@ class BinarySearchTree {
     
 };
 
+
+// Функция для получения уникальных элементов
+std::vector<int> getUniqueElements(const std::vector<int>& container) {
+    BinarySearchTree bst;
+    std::vector<int> uniqueElements;
+
+    for (int key : container) {
+        bst.insert(key);
+    }
+
+    for (int key : container) {
+        if (bst.contains(key)) {
+            uniqueElements.push_back(key);
+            bst.erase(key);
+        }
+    }
+
+    return uniqueElements;
+}
+
+
+
+
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
@@ -225,6 +251,18 @@ int main() {
         bstAssigned = bst;
         std::cout << "Contents of assigned tree: ";
         bstAssigned.print();
+
+        // Проверка задачи с уникальными элементами
+        std::vector<int> input = {3, 2, 2, 4, 2};
+        std::cout << "Input vector: ";
+        for (int x : input) std::cout << x << " ";
+        std::cout << std::endl;
+
+        std::vector<int> uniqueElements = getUniqueElements(input);
+        std::cout << "Unique elements: ";
+        for (int x : uniqueElements) std::cout << x << " ";
+        std::cout << std::endl;
+
     }
 
     catch (const std::exception& e) {
