@@ -216,10 +216,102 @@ std::vector<int> getUniqueElements(const std::vector<int>& container) {
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
+        // Инициализируем дерево
+        BinarySearchTree bst;
 
-    }
+        // Заполняем дерево элементами
+        std::cout << "Inserting elements" << std::endl;
+        bst.insert(5);
+        bst.insert(3);
+        bst.insert(7);
+        bst.insert(2);
+        bst.insert(4);
+        bst.insert(6);
+        bst.insert(8);
 
-    catch (const std::exception& e) {
+        // Выводим дерево
+        std::cout << "Our tree: ";
+        bst.print();
+
+        // Проверяем наличие элементов
+        std::cout << "\nChecking if elements exists" << std::endl;
+        if (bst.contains(4)) {
+            std::cout << "Contains 4: true" << std::endl;
+        } else {
+            std::cout << "Contains 4: false" << std::endl;
+        }
+        if (bst.contains(10)) {
+            std::cout << "Contains 10: true" << std::endl;
+        } else {
+            std::cout << "Contains 10: false" << std::endl;
+        }
+
+        // Удаляем элементы
+        std::cout << "\nErasing elements" << std::endl;
+        if (bst.erase(3)) {
+            std::cout << "Erase 3: true" << std::endl;
+        } else {
+            std::cout << "Erase 3: false" << std::endl;
+        }
+        if (bst.erase(10)) {
+            std::cout << "Erase 10: true" << std::endl;
+        } else {
+            std::cout << "Erase 10: false" << std::endl;
+        }
+
+        // Выводим содержимое дерева после удаления
+        std::cout << "Our tree after erasing: ";
+        bst.print();
+
+        // Проверяем наличие элементов после удаления
+        std::cout << "\nChecking if elements exist after erasing" << std::endl;
+        if (bst.contains(3)) {
+            std::cout << "Contains 3: true" << std::endl;
+        } else {
+            std::cout << "Contains 3: false" << std::endl;
+        }
+        if (bst.contains(4)) {
+            std::cout << "Contains 4: true" << std::endl;
+        } else {
+            std::cout << "Contains 4: false" << std::endl;
+        }
+
+        // Тестируем конструктор копирования
+        std::cout << "\nTesting copy constructor" << std::endl;
+        BinarySearchTree bstCopy(bst);
+        std::cout << "Copied tree: ";
+        bstCopy.print();
+
+        // Тестируем оператор присваивания
+        std::cout << "\nTesting assignment operator" << std::endl;
+        BinarySearchTree bstAssigned;
+        bstAssigned = bst;
+        std::cout << "Contents of assigned tree: ";
+        bstAssigned.print();
+
+        // Проверка задачи с уникальными элементами
+        std::vector<int> input = {3, 2, 2, 4, 2};
+        std::cout << "\nInput vector: ";
+        for (int x : input) std::cout << x << " ";
+        std::cout << std::endl;
+
+        auto start = std::chrono::high_resolution_clock::now();
+        std::vector<int> uniqueElements = getUniqueElements(input);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start; // Замерка времени выполнения
+
+        std::cout << "Unique elements: ";
+        for (int x : uniqueElements) std::cout << x << " ";
+        std::cout << std::endl;
+        std::cout << "Time taken to get unique elements: " << elapsed.count() << " seconds" << std::endl;
+
+        // Демонстрация работы итераторов
+        std::cout << "\nIterating through the tree:" << std::endl;
+        for (auto it = bst.begin(); it != bst.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << std::endl;
+    } catch (const std::exception& e) {
         cerr << "Error: " << e.what() << endl;
     }
 
