@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <chrono>
@@ -184,10 +185,90 @@ bool operator>(const std::complex<T>& lhs, const std::complex<T>& rhs) {
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
+        // Демонстрация работы с int
+        {
+            BinarySearchTree<int> bst;
 
-    }
+            std::cout << "Inserting elements (int):" << std::endl;
+            bst.insert(5);
+            bst.insert(3);
+            bst.insert(7);
+            bst.insert(2);
+            bst.insert(4);
+            bst.insert(6);
+            bst.insert(8);
 
-    catch (const std::exception& e) {
+            std::cout << "Our tree (int): ";
+            bst.print();
+
+            std::cout << "Contains 4: " << (bst.contains(4) ? "true" : "false") << std::endl;
+            std::cout << "Contains 10: " << (bst.contains(10) ? "true" : "false") << std::endl;
+
+            std::vector<int> input = {3, 2, 2, 4, 2};
+            std::cout << "Input vector (int): ";
+            for (int x : input) std::cout << x << " ";
+            std::cout << std::endl;
+
+            auto uniqueElements = getUniqueElements(input);
+            std::cout << "Unique elements (int): ";
+            for (int x : uniqueElements) std::cout << x << " ";
+            std::cout << std::endl;
+        }
+
+        // Демонстрация работы с std::complex<float>
+        {
+            BinarySearchTree<std::complex<float>> bst;
+
+            std::cout << "\nInserting elements (std::complex<float>):" << std::endl;
+            bst.insert({1.0f, 2.0f});
+            bst.insert({3.0f, 4.0f});
+            bst.insert({-1.0f, 0.0f});
+            bst.insert({2.0f, 3.0f});
+
+            std::cout << "Our tree (std::complex<float>): ";
+            bst.print();
+
+            std::cout << "Contains {1.0, 2.0}: " << (bst.contains({1.0f, 2.0f}) ? "true" : "false") << std::endl;
+            std::cout << "Contains {5.0, 6.0}: " << (bst.contains({5.0f, 6.0f}) ? "true" : "false") << std::endl;
+
+            std::vector<std::complex<float>> input = {{1.0f, 2.0f}, {3.0f, 4.0f}, {1.0f, 2.0f}};
+            std::cout << "Input vector (std::complex<float>): ";
+            for (const auto& x : input) std::cout << "(" << x.real() << ", " << x.imag() << ") ";
+            std::cout << std::endl;
+
+            auto uniqueElements = getUniqueElements(input);
+            std::cout << "Unique elements (std::complex<float>): ";
+            for (const auto& x : uniqueElements) std::cout << "(" << x.real() << ", " << x.imag() << ") ";
+            std::cout << std::endl;
+        }
+
+        // Демонстрация работы с std::string
+        {
+            BinarySearchTree<std::string> bst;
+
+            std::cout << "\nInserting elements (std::string):" << std::endl;
+            bst.insert("apple");
+            bst.insert("banana");
+            bst.insert("cherry");
+            bst.insert("date");
+
+            std::cout << "Our tree (std::string): ";
+            bst.print();
+
+            std::cout << "Contains 'banana': " << (bst.contains("banana") ? "true" : "false") << std::endl;
+            std::cout << "Contains 'grape': " << (bst.contains("grape") ? "true" : "false") << std::endl;
+
+            std::vector<std::string> input = {"apple", "banana", "apple", "cherry"};
+            std::cout << "Input vector (std::string): ";
+            for (const auto& x : input) std::cout << x << " ";
+            std::cout << std::endl;
+
+            auto uniqueElements = getUniqueElements(input);
+            std::cout << "Unique elements (std::string): ";
+            for (const auto& x : uniqueElements) std::cout << x << " ";
+            std::cout << std::endl;
+        }
+    } catch (const std::exception& e) {
         cerr << "Error: " << e.what() << endl;
     }
 
