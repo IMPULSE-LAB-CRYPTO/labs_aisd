@@ -1,0 +1,296 @@
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <numeric>
+
+
+using namespace std;
+
+
+//генератор ПСЧ
+size_t lcg(){
+    static size_t x = 0;
+    x = (1021*x+24631) % 116640;
+    return x;
+}
+
+
+class BinarySearchTree {
+    private:
+    struct Node {
+        int key;
+        Node* left;
+        Node* right;
+    
+        Node(int k) : key(k), left(nullptr), right(nullptr) {}
+    };
+    
+    Node* root;
+
+    //Вспомогательные функции
+    Node* copyTree(Node* node) {
+        if (node == nullptr) return nullptr;
+        Node* newNode = new Node(node->key);
+        newNode->left = copyTree(node->left);
+        newNode->right = copyTree(node->right);
+        return newNode;
+    }
+
+    void destroyTree(Node* node) {
+        if (node) {
+            destroyTree(node->left);
+            destroyTree(node->right);
+            delete node;
+        }
+    }
+
+    void printTree(Node* node) const {
+        if (node) {
+            printTree(node->left);
+            std::cout << node->key << " ";
+            printTree(node->right);
+        }
+    }
+
+    bool insertNode(Node*& node, int key) {
+        if (node == nullptr) {
+            node = new Node(key);
+            return true;
+        }
+        if (key < node->key) {
+            return insertNode(node->left, key);
+        } else if (key > node->key) {
+            return insertNode(node->right, key);
+        }
+        return false;
+    }
+
+    bool containsNode(Node* node, int key) const {
+        if (node == nullptr) return false;
+        if (key < node->key) {
+            return containsNode(node->left, key);
+        } else if (key > node->key) {
+            return containsNode(node->right, key);
+        }
+        return true;
+    }
+
+    bool eraseNode(Node*& node, int key) {
+        if (node == nullptr) return false;
+        if (key < node->key) {
+            return eraseNode(node->left, key);
+        } else if (key > node->key) {
+            return eraseNode(node->right, key);
+        } else {
+            if (node->left == nullptr && node->right == nullptr) {
+                delete node;
+                node = nullptr;
+            } else if (node->left == nullptr) {
+                Node* temp = node;
+                node = node->right;
+                delete temp;
+            } else if (node->right == nullptr) {
+                Node* temp = node;
+                node = node->left;
+                delete temp;
+            } else {
+                Node* minNode = findMin(node->right);
+                node->key = minNode->key;
+                eraseNode(node->right, minNode->key);
+            }
+            return true;
+        }
+    }
+    Node* findMin(Node* node) {
+        while (node->left != nullptr) node = node->left;
+        return node;
+    }
+
+
+    public:
+    BinarySearchTree() : root(nullptr) {}
+
+    BinarySearchTree(const BinarySearchTree& other) {
+        root = copyTree(other.root);
+    }
+
+    ~BinarySearchTree() {
+        destroyTree(root);
+    }
+
+    BinarySearchTree& operator=(const BinarySearchTree& other) {
+        if (this != &other) {
+            destroyTree(root);
+            root = copyTree(other.root);
+        }
+        return *this;
+    }
+
+    void print() const {
+        printTree(root);
+        std::cout << std::endl;
+    }
+
+    bool insert(int key) {
+        return insertNode(root, key);
+    }
+
+    bool contains(int key) const {
+        return containsNode(root, key);
+    }
+
+    bool erase(int key) {
+        return eraseNode(root, key);
+    }
+
+};
+
+
+// Функция для получения уникальных элементов
+std::vector<int> getUniqueElements(const std::vector<int>& container) {
+    BinarySearchTree bst;
+    std::vector<int> uniqueElements;
+    
+    for (int key : container) {
+        bst.insert(key);
+    }
+
+    for (int key : container) {
+        if (bst.contains(key)) {
+            uniqueElements.push_back(key);
+            bst.erase(key);
+        }
+    }
+
+    return uniqueElements;
+
+}
+
+void runTests() {
+    const int sizes[] = {1000, 10000};
+    const int fillAttempts = 100;
+    const int operationAttempts = 1000;
+
+    for (int size : sizes) {
+        std::cout << "\nSize: " << size << std::endl;
+
+        double bstFillTime = 0;
+        double vectorFillTime = 0;
+
+        for (int i = 0; i < fillAttempts; i++) {
+            BinarySearchTree bst;
+            std::vector<int> vec;
+
+            auto start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < size; j++)
+                bst.insert(lcg() % (size * 10));
+            auto end = std::chrono::high_resolution_clock::now();
+            bstFillTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < size; j++)
+                vec.push_back(lcg() % (size * 10));
+            end = std::chrono::high_resolution_clock::now();
+            vectorFillTime += std::chrono::duration<double, std::micro>(end - start).count();
+        }
+
+        BinarySearchTree bst;
+        std::vector<int> vec;
+
+        for (int i = 0; i < size; i++) {
+            int val = lcg() % (size * 10);
+            bst.insert(val);
+            vec.push_back(val);
+        }
+
+        double bstSearchTime = 0, vectorSearchTime = 0;
+        double bstInsertTime = 0, vectorInsertTime = 0;
+        double bstEraseTime = 0, vecEraseTime = 0;
+
+        for (int i = 0; i < operationAttempts; i++) {
+            int val = lcg() % (size * 10);
+
+            // Измеряем время для группы операций поиска
+            auto start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                bst.contains(val);
+            }
+            auto end = std::chrono::high_resolution_clock::now();
+            bstSearchTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                std::find(vec.begin(), vec.end(), val);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            vectorSearchTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            // Измеряем время для группы операций вставки
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                bst.insert(val);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            bstInsertTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                vec.push_back(val);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            vectorInsertTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            // Измеряем время для группы операций удаления
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                bst.erase(val);
+            }
+            end = std::chrono::high_resolution_clock::now();
+            bstEraseTime += std::chrono::duration<double, std::micro>(end - start).count();
+
+            // Удаляем элемент из середины вектора
+            start = std::chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                auto it = std::find(vec.begin(), vec.end(), val);
+                if (it != vec.end()) {
+                    vec.erase(it);
+                }
+            }
+            end = std::chrono::high_resolution_clock::now();
+            vecEraseTime += std::chrono::duration<double, std::micro>(end - start).count();
+        }
+
+        // Усредняем время для группы операций
+        bstSearchTime /= (operationAttempts * 1000);
+        vectorSearchTime /= (operationAttempts * 1000);
+        bstInsertTime /= (operationAttempts * 1000);
+        vectorInsertTime /= (operationAttempts * 1000);
+        bstEraseTime /= (operationAttempts * 1000);
+        vecEraseTime /= (operationAttempts * 1000);
+
+        std::cout << "BST Fill Time: " << bstFillTime / fillAttempts << " micro s\n";
+        std::cout << "Vector Fill Time: " << vectorFillTime / fillAttempts << " micro s\n";
+        std::cout << "BST Search Time: " << bstSearchTime << " micro s\n";
+        std::cout << "Vector Search Time: " << vectorSearchTime << " micro s\n";
+        std::cout << "BST Insert Time: " << bstInsertTime << " micro s\n";
+        std::cout << "Vector Insert Time: " << vectorInsertTime << " micro s\n";
+        std::cout << "BST Erase Time: " << bstEraseTime << " micro s\n";
+        std::cout << "Vector Erase Time: " << vecEraseTime << " micro s\n";
+    }
+}
+
+
+int main() {
+    setlocale(LC_ALL, "ru_RU");
+    try {
+
+    }
+
+    catch (const std::exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
