@@ -33,7 +33,7 @@ public:
 
     // Конструктор копирования
     LinkedList(const LinkedList& other) {
-        if (other.head == nullptr) {
+        if (other.head == nullptr) {    
             head = nullptr;
             return;
         }
