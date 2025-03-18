@@ -295,15 +295,11 @@ int main() {
         for (int x : input) std::cout << x << " ";
         std::cout << std::endl;
 
-        auto start = std::chrono::high_resolution_clock::now();
         std::vector<int> uniqueElements = getUniqueElements(input);
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start; // Замерка времени выполнения
 
         std::cout << "Unique elements: ";
         for (int x : uniqueElements) std::cout << x << " ";
         std::cout << std::endl;
-        std::cout << "Time taken to get unique elements: " << elapsed.count() << " seconds" << std::endl;
 
         // Демонстрация работы итераторов
         std::cout << "\nIterating through the tree:" << std::endl;
@@ -311,6 +307,7 @@ int main() {
             std::cout << *it << " ";
         }
         std::cout << std::endl;
+
     } catch (const std::exception& e) {
         cerr << "Error: " << e.what() << endl;
     }
