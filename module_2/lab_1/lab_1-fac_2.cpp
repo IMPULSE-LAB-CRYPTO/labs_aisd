@@ -78,7 +78,7 @@ class BinarySearchTree {
         return true;
     }
 
-    bool eraseNode(Node*& node, int key) {
+    bool eraseNode(Node*& node, const T& key) {
         if (node == nullptr) return false;
         if (key < node->key) {
             return eraseNode(node->left, key);
@@ -268,6 +268,7 @@ int main() {
             for (const auto& x : uniqueElements) std::cout << x << " ";
             std::cout << std::endl;
         }
+
     } catch (const std::exception& e) {
         cerr << "Error: " << e.what() << endl;
     }
