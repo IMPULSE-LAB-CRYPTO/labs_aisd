@@ -39,6 +39,11 @@ class RomanNumeralHashTable {
             
             // Восстанавливаем точное количество элементов
             element_count = old_element_count;
+        }   
+
+        // Линейное пробирование
+        size_t get_probed_index(size_t index, int attempt) const {
+            return (index + attempt) % capacity;
         }
 
         // Метод умножения и сдвига для хеширования строк
@@ -58,6 +63,7 @@ class RomanNumeralHashTable {
             return final_hash % capacity;
         }
 
+        
 
     public:
         // Конструктор пустой таблицы заданного размера
