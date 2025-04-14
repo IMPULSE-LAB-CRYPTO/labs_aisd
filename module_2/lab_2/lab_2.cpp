@@ -1,5 +1,9 @@
 #include <iostream>
-
+#include <string>
+#include <cmath>
+#include <stdexcept>
+#include <cstdlib> // Для rand() и srand()
+#include <ctime>   // Для time()
 
 class RomanNumeralHashTable {
     private:
@@ -13,7 +17,7 @@ class RomanNumeralHashTable {
         };
     
         static const size_t INITIAL_CAPACITY = 16; //принадлежит классу в целом
-        static const double MAX_LOAD_FACTOR;
+        static const int MAX_LOAD_FACTOR = 0.7;
         
         TableEntry* entries;
         size_t capacity;
@@ -100,11 +104,15 @@ class RomanNumeralHashTable {
             entries = new TableEntry[capacity];
             
             if (fill_random) {
-                srand(time(nullptr)); // Инициализация генератора случайных чисел
-                for (size_t i = 0; i < capacity; ++i) {
+                srand(time(nullptr));
+                size_t elements_to_insert = capacity * MAX_LOAD_FACTOR; // Заполняем только до MAX_LOAD_FACTOR
+                for (size_t i = 0; i < elements_to_insert; ++i) {
                     std::string roman = generate_random_roman();
                     int value = generate_random_value();
-                    insert_element(roman, value);
+                    if (!insert_element(roman, value)) {
+                        // Если не удалось вставить (дубликат), пробуем другой ключ
+                        i--;
+                    }
                 }
             }
         }
@@ -244,12 +252,20 @@ class RomanNumeralHashTable {
 int main() {
     setlocale(LC_ALL, "ru_RU");
     try {
-
+        // Тест с разными размерами
+        RomanNumeralHashTable small_table(5);
+        RomanNumeralHashTable medium_table(20, true);
+        RomanNumeralHashTable large_table(1000, true);
+        
+        medium_table.display_contents();
     }
-
+    catch (const std::bad_alloc& e) {
+        std::cerr << "Memory allocation failed: " << e.what() << std::endl;
+        return 1;
+    }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
-
     return 0;
 }
