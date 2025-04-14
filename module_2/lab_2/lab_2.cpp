@@ -201,7 +201,41 @@ class RomanNumeralHashTable {
             }
             return false;
         }
+
+        // Удаление элемента
+        bool remove_element(const std::string& key) {
+            size_t index = compute_hash(key);
+            int attempt = 0;
+
+            while (attempt < static_cast<int>(capacity)) {
+                size_t current = get_probed_index(index, attempt);
+                
+                if (!entries[current].is_occupied && !entries[current].is_deleted) {
+                    return false;
+                }
+                
+                if (entries[current].is_occupied && !entries[current].is_deleted && 
+                    entries[current].key == key) {
+                    entries[current].is_deleted = true;
+                    element_count--;
+                    return true;
+                }
+                
+                attempt++;
+            }
+
+            return false;
+        }
         
+        // Вывод содержимого таблицы
+        void display_contents() const {
+            for (size_t i = 0; i < capacity; ++i) {
+                if (entries[i].is_occupied && !entries[i].is_deleted) {
+                    std::cout << "[" << i << "]: " << entries[i].key 
+                            << " => " << entries[i].value << "\n";
+                }
+            }
+        }
 };
 
 
