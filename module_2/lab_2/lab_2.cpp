@@ -26,6 +26,23 @@ class RomanNumeralHashTable {
             initialize_roman_numerals();
         }
         
+
+        void initialize_roman_numerals() {
+            insert_element("I", 1);
+            insert_element("IV", 4);
+            insert_element("V", 5);
+            insert_element("IX", 9);
+            insert_element("X", 10);
+            insert_element("XL", 40);
+            insert_element("L", 50);
+            insert_element("XC", 90);
+            insert_element("C", 100);
+            insert_element("CD", 400);
+            insert_element("D", 500);
+            insert_element("CM", 900);
+            insert_element("M", 1000);
+        }
+
         // Деструктор
         ~RomanNumeralHashTable() {
             delete[] entries;
@@ -40,6 +57,32 @@ class RomanNumeralHashTable {
             }
         }
 
+
+        // Вставка элемента
+        bool insert_element(const std::string& key, int value) {
+            
+
+            size_t index = compute_hash(key);
+            int attempt = 0;
+
+            while (attempt < static_cast<int>(capacity)) {
+                size_t current = get_probed_index(index, attempt);
+                
+                if (!entries[current].is_occupied || entries[current].is_deleted) {
+                    entries[current].key = key;
+                    entries[current].value = value;
+                    entries[current].is_occupied = true;
+                    entries[current].is_deleted = false;
+                    element_count++;
+                    return true;
+                }
+                if (entries[current].key == key && !entries[current].is_deleted) {
+                    return false;
+                }
+                attempt++;
+            }
+            return false;
+        }
         
 };
 
