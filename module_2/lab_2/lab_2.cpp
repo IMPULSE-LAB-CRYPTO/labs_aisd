@@ -18,7 +18,29 @@ class RomanNumeralHashTable {
         TableEntry* entries;
         size_t capacity;
         size_t element_count;
-    
+        
+        // Рехеширование таблицы
+        void rehash_table() {
+            size_t old_capacity = capacity;
+            TableEntry* old_entries = entries;
+            
+            capacity *= 2;
+            entries = new TableEntry[capacity];
+            size_t old_element_count = element_count;
+            element_count = 0;
+
+            for (size_t i = 0; i < old_capacity; ++i) {
+                if (old_entries[i].is_occupied && !old_entries[i].is_deleted) {
+                    insert_element(old_entries[i].key, old_entries[i].value);
+                }
+            }
+            
+            delete[] old_entries;
+            
+            // Восстанавливаем точное количество элементов
+            element_count = old_element_count;
+        }
+
     public:
         // Конструкторы
         RomanNumeralHashTable() : capacity(INITIAL_CAPACITY), element_count(0) {
@@ -60,7 +82,9 @@ class RomanNumeralHashTable {
 
         // Вставка элемента
         bool insert_element(const std::string& key, int value) {
-            
+            if (element_count >= capacity * MAX_LOAD_FACTOR) {
+                rehash_table();
+            }
 
             size_t index = compute_hash(key);
             int attempt = 0;
