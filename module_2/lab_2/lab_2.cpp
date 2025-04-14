@@ -135,6 +135,21 @@ class RomanNumeralHashTable {
             }
         }
 
+        // Оператор присваивания
+        RomanNumeralHashTable& operator=(const RomanNumeralHashTable& other) {
+            if (this != &other) {
+                delete[] entries;
+                
+                capacity = other.capacity;
+                element_count = other.element_count;
+                entries = new TableEntry[capacity];
+                
+                for (size_t i = 0; i < capacity; ++i) {
+                    entries[i] = other.entries[i];
+                }
+            }
+            return *this;
+        }
 
         // Вставка элемента
         bool insert_element(const std::string& key, int value) {
