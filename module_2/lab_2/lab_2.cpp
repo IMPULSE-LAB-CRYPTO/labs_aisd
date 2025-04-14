@@ -151,6 +151,29 @@ class RomanNumeralHashTable {
             return *this;
         }
 
+        // Поиск элемента
+        int* find_element(const std::string& key) {
+            size_t index = compute_hash(key);
+            int attempt = 0;
+
+            while (attempt < static_cast<int>(capacity)) {
+                size_t current = get_probed_index(index, attempt);
+                
+                if (!entries[current].is_occupied && !entries[current].is_deleted) {
+                    return nullptr;
+                }
+                
+                if (entries[current].is_occupied && !entries[current].is_deleted && 
+                    entries[current].key == key) {
+                    return &entries[current].value;
+                }
+                
+                attempt++;
+            }
+
+            return nullptr;
+        }
+
         // Вставка элемента
         bool insert_element(const std::string& key, int value) {
             if (element_count >= capacity * MAX_LOAD_FACTOR) {
