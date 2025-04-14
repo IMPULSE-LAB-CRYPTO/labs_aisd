@@ -18,6 +18,29 @@ class RomanNumeralHashTable {
         TableEntry* entries;
         size_t capacity;
         size_t element_count;
+    
+    public:
+        // Конструкторы
+        RomanNumeralHashTable() : capacity(INITIAL_CAPACITY), element_count(0) {
+            entries = new TableEntry[capacity];
+            initialize_roman_numerals();
+        }
+        
+        // Деструктор
+        ~RomanNumeralHashTable() {
+            delete[] entries;
+        }
+    
+        // Копирующий конструктор
+        RomanNumeralHashTable(const RomanNumeralHashTable& other) 
+            : capacity(other.capacity), element_count(other.element_count) {
+            entries = new TableEntry[capacity];
+            for (size_t i = 0; i < capacity; ++i) {
+                entries[i] = other.entries[i];
+            }
+        }
+
+        
 };
 
 
