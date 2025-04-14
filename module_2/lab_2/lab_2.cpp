@@ -41,13 +41,36 @@ class RomanNumeralHashTable {
             element_count = old_element_count;
         }
 
+        // Метод умножения и сдвига для хеширования строк
+        size_t compute_hash(const std::string& key) const {
+            const int word_size = 32;
+            const int shift_bits = log2(capacity);
+            const uint64_t multiplier = 2654435761;
+            
+            uint64_t hash_value = 0;
+            
+            // Хеширование строки посимвольно
+            for (char ch : key) {
+                hash_value = (hash_value * multiplier) + static_cast<uint64_t>(ch);
+            }
+            
+            uint32_t final_hash = static_cast<uint32_t>(hash_value >> (word_size - shift_bits));
+            return final_hash % capacity;
+        }
+
+
     public:
-        // Конструкторы
+        // Конструктор пустой таблицы заданного размера
+        RomanNumeralHashTable(size_t initial_size) : capacity(initial_size), element_count(0) {
+            if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
+            entries = new TableEntry[capacity];
+        }
+
+        // Конструктор с базовыми числами
         RomanNumeralHashTable() : capacity(INITIAL_CAPACITY), element_count(0) {
             entries = new TableEntry[capacity];
             initialize_roman_numerals();
         }
-        
 
         void initialize_roman_numerals() {
             insert_element("I", 1);
@@ -63,6 +86,33 @@ class RomanNumeralHashTable {
             insert_element("D", 500);
             insert_element("CM", 900);
             insert_element("M", 1000);
+        }
+
+        // Конструктор с заполнением случайными значениями
+        RomanNumeralHashTable(size_t initial_size, bool fill_random) : capacity(initial_size), element_count(0) {
+            if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
+            entries = new TableEntry[capacity];
+            
+            if (fill_random) {
+                srand(time(nullptr)); // Инициализация генератора случайных чисел
+                for (size_t i = 0; i < capacity; ++i) {
+                    std::string roman = generate_random_roman();
+                    int value = generate_random_value();
+                    insert_element(roman, value);
+                }
+            }
+        }
+
+        // Генератор случайных римских чисел
+        std::string generate_random_roman() const {
+            static const std::string romans[] = {"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C", "CD", "D", "CM", "M"};
+            return romans[rand() % (sizeof(romans)/sizeof(romans[0]))];
+        }
+
+        // Генератор случайных чисел для значений
+        int generate_random_value() const {
+            static const int values[] = {1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000};
+            return values[rand() % (sizeof(values)/sizeof(values[0]))];
         }
 
         // Деструктор
