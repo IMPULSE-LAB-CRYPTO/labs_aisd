@@ -22,7 +22,8 @@ class RomanNumeralHashTable {
         TableEntry* entries;
         size_t capacity;
         size_t element_count;
-        
+
+
         // Рехеширование таблицы
         void rehash_table() {
             size_t old_capacity = capacity;
@@ -30,7 +31,6 @@ class RomanNumeralHashTable {
             
             capacity *= 2;
             entries = new TableEntry[capacity];
-            size_t old_element_count = element_count;
             element_count = 0;
 
             for (size_t i = 0; i < old_capacity; ++i) {
@@ -40,21 +40,18 @@ class RomanNumeralHashTable {
             }
             
             delete[] old_entries;
-            
-            // Восстанавливаем точное количество элементов
-            element_count = old_element_count;
         }   
 
         // Линейное пробирование
-        size_t get_probed_index(size_t index, int attempt) const {
-            return (index + attempt) % capacity;
+        size_t linear_probing(size_t hash, int attempt) const {
+            return (hash + attempt) % capacity;
         }
 
         // Метод умножения и сдвига для хеширования строк
-        size_t compute_hash(const std::string& key) const {
-            const int word_size = 32;
-            const int shift_bits = log2(capacity);
-            const uint64_t multiplier = 2654435761;
+        size_t multiply_shift_hash(const std::string& key) const {
+            const int word_size = 32; // Размер машинного слова
+            const int shift_bits = static_cast<int>(log2(capacity));
+            const uint64_t multiplier = 2654435761; // Константа из golden ratio
             
             uint64_t hash_value = 0;
             
@@ -70,7 +67,7 @@ class RomanNumeralHashTable {
         
 
     public:
-        // Конструктор пустой таблицы заданного размера
+        // 1. Конструктор пустой таблицы заданного размера
         RomanNumeralHashTable(size_t initial_size) : capacity(initial_size), element_count(0) {
             if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
             entries = new TableEntry[capacity];
@@ -98,52 +95,38 @@ class RomanNumeralHashTable {
             insert_element("M", 1000);
         }
 
-        // Конструктор с заполнением случайными значениями
-        RomanNumeralHashTable(size_t initial_size, bool fill_random) : capacity(initial_size), element_count(0) {
+        // 2. Конструктор со случайными значениями
+        RomanNumeralHashTable(size_t initial_size, bool random_fill) : capacity(initial_size), element_count(0) {
             if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
             entries = new TableEntry[capacity];
             
-            if (fill_random) {
-                srand(time(nullptr));
-                size_t elements_to_insert = capacity * MAX_LOAD_FACTOR; // Заполняем только до MAX_LOAD_FACTOR
-                for (size_t i = 0; i < elements_to_insert; ++i) {
-                    std::string roman = generate_random_roman();
-                    int value = generate_random_value();
-                    if (!insert_element(roman, value)) {
-                        // Если не удалось вставить (дубликат), пробуем другой ключ
-                        i--;
-                    }
+            if (random_fill) {
+                const std::string romans[] = {"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C", "CD", "D", "CM", "M"};
+                const int values[] = {1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000};
+                const size_t count = sizeof(values) / sizeof(values[0]);
+                
+                size_t elements_to_add = static_cast<size_t>(capacity * MAX_LOAD_FACTOR);
+                for (size_t i = 0; i < elements_to_add; ++i) {
+                    size_t index = i % count;
+                    insert_element(romans[index], values[index]);
                 }
             }
         }
-
-        // Генератор случайных римских чисел
-        std::string generate_random_roman() const {
-            static const std::string romans[] = {"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C", "CD", "D", "CM", "M"};
-            return romans[rand() % (sizeof(romans)/sizeof(romans[0]))];
-        }
-
-        // Генератор случайных чисел для значений
-        int generate_random_value() const {
-            static const int values[] = {1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000};
-            return values[rand() % (sizeof(values)/sizeof(values[0]))];
-        }
-
-        // Деструктор
-        ~RomanNumeralHashTable() {
-            delete[] entries;
-        }
     
-        // Копирующий конструктор
-        RomanNumeralHashTable(const RomanNumeralHashTable& other) 
-            : capacity(other.capacity), element_count(other.element_count) {
+        // 3. Конструтор копирования
+        RomanNumeralHashTable(const RomanNumeralHashTable& other) : capacity(other.capacity), element_count(other.element_count) {
             entries = new TableEntry[capacity];
             for (size_t i = 0; i < capacity; ++i) {
                 entries[i] = other.entries[i];
             }
+        }   
+
+        // 4. Деструктор
+        ~RomanNumeralHashTable() {
+            delete[] entries;
         }
 
-        // Оператор присваивания
+        // 5. Оператор присваивания
         RomanNumeralHashTable& operator=(const RomanNumeralHashTable& other) {
             if (this != &other) {
                 delete[] entries;
@@ -159,13 +142,97 @@ class RomanNumeralHashTable {
             return *this;
         }
 
-        // Поиск элемента
-        int* find_element(const std::string& key) {
-            size_t index = compute_hash(key);
+        // 6. Вывод содержимого таблицы
+        void print() const {
+            std::cout << "Hash Table (capacity: " << capacity 
+                      << ", size: " << element_count << ")\n";
+            for (size_t i = 0; i < capacity; ++i) {
+                if (entries[i].is_occupied && !entries[i].is_deleted) {
+                    std::cout << "[" << i << "]: " << entries[i].key 
+                              << " => " << entries[i].value << "\n";
+                }
+            }
+        }
+
+        // 7. Вставка значения по ключу
+        bool insert_element(const std::string& key, int value) {
+            if (element_count >= capacity * MAX_LOAD_FACTOR) {
+                rehash_table();
+            }
+
+            size_t hash = multiply_shift_hash(key);
+            size_t attempt = 0;
+
+            while (attempt < capacity) {
+                size_t index = linear_probing(hash, attempt);
+                
+                if (!entries[index].is_occupied || entries[index].is_deleted) {
+                    entries[index].key = key;
+                    entries[index].value = value;
+                    entries[index].is_occupied = true;
+                    entries[index].is_deleted = false;
+                    element_count++;
+                    return true;
+                }
+                
+                if (entries[index].key == key && !entries[index].is_deleted) {
+                    return false; // Ключ уже существует
+                }
+                
+                attempt++;
+            }
+            
+            return false;
+        }
+
+
+        // 8. Присвоение
+        void assign(const std::string& key, int value) {
+            size_t hash = multiply_shift_hash(key);
+            size_t attempt = 0;
+
+            while (attempt < capacity) {
+                size_t index = linear_probing(hash, attempt);
+                
+                if (!entries[index].is_occupied || entries[index].is_deleted) {
+                    entries[index].key = key;
+                    entries[index].value = value;
+                    entries[index].is_occupied = true;
+                    entries[index].is_deleted = false;
+                    element_count++;
+                    return;
+                }
+                
+                if (entries[index].key == key) {
+                    entries[index].value = value;
+                    return;
+                }
+                
+                attempt++;
+            }
+            
+            rehash_table();
+            assign(key, value);
+        }
+
+        // 9. Проверка наличия элемента
+        bool contains(int value) const {
+            for (size_t i = 0; i < capacity; ++i) {
+                if (entries[i].is_occupied && !entries[i].is_deleted && 
+                    entries[i].value == value) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 10. Поиск элемента
+        int* search(const std::string& key) {
+            size_t hash = multiply_shift_hash(key);
             int attempt = 0;
 
             while (attempt < static_cast<int>(capacity)) {
-                size_t current = get_probed_index(index, attempt);
+                size_t current = linear_probing(hash, attempt);
                 
                 if (!entries[current].is_occupied && !entries[current].is_deleted) {
                     return nullptr;
@@ -181,42 +248,14 @@ class RomanNumeralHashTable {
 
             return nullptr;
         }
-
-        // Вставка элемента
-        bool insert_element(const std::string& key, int value) {
-            if (element_count >= capacity * MAX_LOAD_FACTOR) {
-                rehash_table();
-            }
-
-            size_t index = compute_hash(key);
-            int attempt = 0;
-
-            while (attempt < static_cast<int>(capacity)) {
-                size_t current = get_probed_index(index, attempt);
-                
-                if (!entries[current].is_occupied || entries[current].is_deleted) {
-                    entries[current].key = key;
-                    entries[current].value = value;
-                    entries[current].is_occupied = true;
-                    entries[current].is_deleted = false;
-                    element_count++;
-                    return true;
-                }
-                if (entries[current].key == key && !entries[current].is_deleted) {
-                    return false;
-                }
-                attempt++;
-            }
-            return false;
-        }
-
-        // Удаление элемента
+    
+        // 11. Удаление элемента
         bool remove_element(const std::string& key) {
-            size_t index = compute_hash(key);
+            size_t hash = multiply_shift_hash(key);
             int attempt = 0;
 
             while (attempt < static_cast<int>(capacity)) {
-                size_t current = get_probed_index(index, attempt);
+                size_t current = linear_probing(hash, attempt);
                 
                 if (!entries[current].is_occupied && !entries[current].is_deleted) {
                     return false;
@@ -235,37 +274,88 @@ class RomanNumeralHashTable {
             return false;
         }
         
-        // Вывод содержимого таблицы
-        void display_contents() const {
+
+        // 12. Количество элементов с совпадающим хешем
+        int count(const std::string& key) const {
+            size_t hash = multiply_shift_hash(key);
+            int result = 0;
+
             for (size_t i = 0; i < capacity; ++i) {
                 if (entries[i].is_occupied && !entries[i].is_deleted) {
-                    std::cout << "[" << i << "]: " << entries[i].key 
-                            << " => " << entries[i].value << "\n";
+                    size_t current_hash = multiply_shift_hash(entries[i].key);
+                    if (current_hash == hash) {
+                        result++;
+                    }
                 }
             }
+            
+            return result;
         }
+
+
 };
-
-
 
 
 int main() {
     setlocale(LC_ALL, "ru_RU");
+    
     try {
-        // Тест с разными размерами
-        RomanNumeralHashTable small_table(5);
-        RomanNumeralHashTable medium_table(20, true);
-        RomanNumeralHashTable large_table(1000, true);
+        // 1. Демонстрация конструкторов
+        std::cout << "=== Empty table constructor ===" << std::endl;
+        RomanNumeralHashTable emptyTable(8);
+        emptyTable.print();
         
-        medium_table.display_contents();
-    }
-    catch (const std::bad_alloc& e) {
-        std::cerr << "Memory allocation failed: " << e.what() << std::endl;
+        std::cout << "\n=== Random fill constructor ===" << std::endl;
+        RomanNumeralHashTable randomTable(10, true);
+        randomTable.print();
+        
+        // 2. Демонстрация операций
+        std::cout << "\n=== Operations demonstration ===" << std::endl;
+        RomanNumeralHashTable table;
+        
+        // Вставка элементов
+        table.insert_element("I", 1);
+        table.insert_element("V", 5);
+        table.insert_element("X", 10);
+        table.insert_element("L", 50);
+        table.insert_element("C", 100);
+        table.insert_element("D", 500);
+        table.insert_element("M", 1000);
+        
+        // Печать
+        table.print();
+        
+        // Поиск
+        std::cout << "\nSearch 'X': ";
+        int* value = table.search("X");
+        if (value) {
+            std::cout << *value << std::endl;
+        } else {
+            std::cout << "Not found" << std::endl;
+        }
+        
+        // Удаление
+        std::cout << "Erase 'L': " << (table.remove_element("L") ? "Success" : "Failed") << std::endl;
+        table.print();
+        
+        // Присвоение
+        std::cout << "\nInsert or assign 'V' to 6:" << std::endl;
+        table.assign("V", 6);
+        table.print();
+        
+        // Проверка наличия
+        std::cout << "\nContains value 100: " << (table.contains(100) ? "Yes" : "No") << std::endl;
+        
+        // Подсчет коллизий
+        std::cout << "Count elements with same hash as 'I': " << table.count("I") << std::endl;
+
+    } catch (const std::bad_alloc& e) {
+        std::cerr << "Memory allocation error: " << e.what() << std::endl;
         return 1;
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
+
     return 0;
 }
