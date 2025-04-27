@@ -3,6 +3,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <functional>
+#include <complex>
+#include <type_traits>
 
 template <typename KeyType, typename ValueType>
 class RomanNumeralHashTable {
@@ -42,6 +44,13 @@ private:
     size_t default_hash(const KeyType& key) const {
         std::hash<KeyType> hasher;
         return hasher(key) % capacity;
+    }
+
+    // Хеш-функция для комплексных чисел
+    size_t complex_hash(const std::complex<double>& c) const {
+        size_t h1 = std::hash<double>()(c.real());
+        size_t h2 = std::hash<double>()(c.imag());
+        return h1 ^ (h2 << 1);
     }
 
     // Хеш-функция для римских чисел
@@ -98,19 +107,51 @@ private:
         delete[] old_entries;
     }
 
+    // Вспомогательные методы для инициализации хеш-функции
+    template<typename K = KeyType>
+    typename std::enable_if<std::is_same<K, std::string>::value>::type
+    init_hash_function() {
+        hash_function = [this](const std::string& key) { return this->multiply_shift_hash(key); };
+    }
+
+    template<typename K = KeyType>
+    typename std::enable_if<std::is_same<K, std::complex<double>>::value>::type
+    init_hash_function() {
+        hash_function = [this](const std::complex<double>& key) { return this->complex_hash(key); };
+    }
+
+    template<typename K = KeyType>
+    typename std::enable_if<!std::is_same<K, std::string>::value && !std::is_same<K, std::complex<double>>::value>::type
+    init_hash_function() {
+        hash_function = [this](const KeyType& key) { return this->default_hash(key); };
+    }
+
+    // Вспомогательные методы для печати значений
+    template<typename V = ValueType>
+    typename std::enable_if<std::is_same<V, std::complex<double>>::value>::type
+    print_value(const V& value) const {
+        std::cout << "(" << value.real() << ", " << value.imag() << ")";
+    }
+
+    template<typename V = ValueType>
+    typename std::enable_if<!std::is_same<V, std::complex<double>>::value>::type
+    print_value(const V& value) const {
+        std::cout << value;
+    }
+
 public:
     // 1. Конструктор пустой хэш таблицы
-    RomanNumeralHashTable(size_t initial_size = INITIAL_CAPACITY, std::function<size_t(const KeyType&)> hash_func = nullptr) 
-        : capacity(initial_size), element_count(0) {
-        if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
-        entries = new TableEntry[capacity];
+        RomanNumeralHashTable(size_t initial_size = INITIAL_CAPACITY, std::function<size_t(const KeyType&)> hash_func = nullptr): capacity(initial_size), element_count(0) {
+            if (initial_size == 0) throw std::invalid_argument("Size cannot be zero");
 
-        if (hash_func) {
-        hash_function = hash_func;
-        } 
-        else {
-        hash_function = [this](const KeyType& key) { return this->default_hash(key); };
-        }
+            entries = new TableEntry[capacity];
+
+            if (hash_func) {
+                hash_function = hash_func;
+            } 
+            else {
+                init_hash_function();
+            }
     }
 
     // 2. Конструктор со случайными значениями (только для std::string, int)
@@ -167,14 +208,15 @@ public:
         return *this;
     }
 
-    // 6. Печать содержимого
+    // 6. Печать содержимого (с перегрузкой для комплексных чисел)
     void print() const {
         std::cout << "Hash Table (capacity: " << capacity 
                   << ", size: " << element_count << ")\n";
         for (size_t i = 0; i < capacity; ++i) {
             if (entries[i].is_occupied && !entries[i].is_deleted) {
-                std::cout << "[" << i << "]: " << entries[i].key 
-                          << " => " << entries[i].value << "\n";
+                std::cout << "[" << i << "]: " << entries[i].key << " => ";
+                print_value(entries[i].value);
+                std::cout << "\n";
             }
         }
     }
@@ -342,8 +384,7 @@ public:
 
     // Специальный метод для перевода римских чисел (только для KeyType = std::string, ValueType = int)
     template <typename K = KeyType, typename V = ValueType>
-    typename std::enable_if<std::is_same<K, std::string>::value && 
-                           std::is_same<V, int>::value, int>::type
+    typename std::enable_if<std::is_same<K, std::string>::value && std::is_same<V, int>::value, int>::type
     roman_to_decimal(const std::string& roman) const {
         // Сначала попробуем найти в таблице
         const int* found = search(roman);
@@ -374,20 +415,57 @@ public:
 template <typename KeyType, typename ValueType>
 const double RomanNumeralHashTable<KeyType, ValueType>::MAX_LOAD_FACTOR = 0.7;
 
+// Оператор вывода для комплексных чисел
+std::ostream& operator<<(std::ostream& os, const std::complex<double>& c) {
+    os << "(" << c.real() << ", " << c.imag() << ")";
+    return os;
+}
+
+
 int main() {
     try {
         // 1. Демонстрация работы с римскими числами
-        std::cout << "=== Roman numerals (original functionality) ===";
+        std::cout << "=== Roman numerals (original functionality) ===" << std::endl;
         RomanNumeralHashTable<std::string, int> romanTable(10, true);
         romanTable.print();
         
         std::string roman;
         std::cout << "Enter a Roman numeral: ";
         std::cin >> roman;
-        std::cout << roman << " = " << romanTable.roman_to_decimal(roman);
+        std::cout << roman << " = " << romanTable.roman_to_decimal(roman) << std::endl;
 
-        // 2. Демонстрация работы с другими типами
-        std::cout << "\n=== Integer keys and string values ===";
+        // 2. Демонстрация работы с комплексными числами как значениями
+        std::cout << "\n=== Complex numbers as values ===" << std::endl;
+        RomanNumeralHashTable<std::string, std::complex<double>> complexValueTable;
+        
+        complexValueTable.insert("root1", std::complex<double>(1.0, 2.0));
+        complexValueTable.insert("root2", std::complex<double>(-3.0, 4.0));
+        complexValueTable.insert("root3", std::complex<double>(5.0, -6.0));
+        
+        complexValueTable.print();
+        
+        auto foundComplex = complexValueTable.search("root2");
+        if (foundComplex) {
+            std::cout << "Found complex number: " << *foundComplex << std::endl;
+        }
+
+        // 3. Демонстрация работы с комплексными числами как ключами
+        std::cout << "\n=== Complex numbers as keys ===" << std::endl;
+        RomanNumeralHashTable<std::complex<double>, std::string> complexKeyTable;
+        
+        complexKeyTable.insert(std::complex<double>(1.0, 0.0), "Real unit");
+        complexKeyTable.insert(std::complex<double>(0.0, 1.0), "Imaginary unit");
+        complexKeyTable.insert(std::complex<double>(1.0, 1.0), "Diagonal");
+        
+        complexKeyTable.print();
+        
+        auto foundStr = complexKeyTable.search(std::complex<double>(0.0, 1.0));
+        if (foundStr) {
+            std::cout << "Found description: " << *foundStr << std::endl;
+        }
+
+        // 4. Демонстрация работы с другими типами
+        std::cout << "\n=== Integer keys and string values ===" << std::endl;
         RomanNumeralHashTable<int, std::string> intStringTable;
         
         intStringTable.insert(1, "one");
@@ -398,11 +476,11 @@ int main() {
         
         auto str = intStringTable.search(2);
         if (str) {
-            std::cout << "Found string: " << *str;
+            std::cout << "Found string: " << *str << std::endl;
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what();
+        std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
     
